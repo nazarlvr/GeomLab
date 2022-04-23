@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 public class Canvas extends JFrame implements MouseListener, KeyListener {
+    ///huy
     int x, y;
     ArrayList<Point> points;
     boolean f, flag;
