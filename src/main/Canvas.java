@@ -1,15 +1,15 @@
+package main;
+
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 public class Canvas extends JFrame implements MouseListener, KeyListener {
     ///huy
-    int x, y;
     ArrayList<Point> points;
     boolean f, flag;
     public Canvas() {
@@ -54,6 +54,17 @@ public class Canvas extends JFrame implements MouseListener, KeyListener {
                     graphics.drawLine(point.x, point.y, point.x, 35);
                 }
             }
+
+
+            if (this.points.size() >= 4)
+            {
+                Segment s = new Segment(this.points.get(0), this.points.get(1));
+                Segment l = new Segment(this.points.get(2), this.points.get(3));
+                Point p = s.Intersection(l);
+
+                if (p != null)
+                    graphics.fillOval(p.x - 2, p.y - 2, 4, 4);
+            }
         }
     }
     public static void main(String[] args) {
@@ -63,19 +74,21 @@ public class Canvas extends JFrame implements MouseListener, KeyListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (!f) {
-            x = e.getX() + 7;
-            y = e.getY() + 33;
-            if (y > 37)
-            this.points.add(new Point(x, y));
-        }
-        this.repaint();
 
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
+        if (!f)
+        {
+            int x = e.getX() + 7;
+            int y = e.getY() + 33;
 
+            if (y > 37)
+                if (this.points.isEmpty() || this.points.get(this.points.size() - 1).distanceSq(x, y) > 10*10)
+                    this.points.add(new Point(x, y));
+        }
+        this.repaint();
     }
 
     @Override
