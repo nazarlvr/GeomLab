@@ -11,6 +11,9 @@ import javax.swing.JPanel;
 public class Canvas extends JFrame implements MouseListener, KeyListener {
     ///huy
     ArrayList<Point> points;
+    Polygon p1;
+    Polygon p2;
+
     boolean f, flag;
     public Canvas() {
         JPanel panel = new JPanel();
@@ -25,27 +28,78 @@ public class Canvas extends JFrame implements MouseListener, KeyListener {
         flag = true;
     }
     public void paint(Graphics gp) { super.paint(gp); Graphics2D graphics = (Graphics2D) gp;
-        if (points.size() > 0) {
-            if (f)
+        //if (points.size() > 0) {
+            /*if (f)
             {
                 graphics.setColor(Color.black);
             }
             else
             {
                 graphics.setColor(Color.red);
-            }
+            }*/
+            graphics.setColor(Color.BLACK);
             graphics.setStroke(new BasicStroke(3));
             for (Point point : points) {
                 graphics.fillOval(point.x - 2, point.y - 2, 4, 4);
             }
 
-            for (int i = 0; i < points.size() - 1; ++i) {
-                graphics.drawLine(points.get(i).x, points.get(i).y, points.get(i + 1).x, points.get(i + 1).y);
+            if (points.size() > 1)
+            {
+                for (int i = 0; i < points.size() - 1; ++i) {
+                    graphics.drawLine(points.get(i).x, points.get(i).y, points.get(i + 1).x, points.get(i + 1).y);
+                }
             }
-            if (f) {
-                graphics.drawLine(points.get(0).x, points.get(0).y, points.get(points.size() - 1).x, points.get(points.size() - 1).y);
+
+            if (p1 != null)
+            {
+                graphics.setColor(Color.RED);
+
+                for (int i = 0; i < p1.segments.size(); ++i) {
+                    Segment s = p1.segments.get(i);
+                    graphics.drawLine(s.p1.x, s.p1.y, s.p2.x, s.p2.y);
+                    graphics.drawString("" + i, (s.p1.x + s.p2.x)/2,(s.p1.y + s.p2.y)/2);
+                }
+
+                graphics.fillOval(p1.segments.get(p1.v).p1.x - 5, p1.segments.get(p1.v).p1.y - 5, 10, 10);
             }
-            graphics.setColor(Color.BLUE);
+
+            if (p2 != null)
+            {
+                graphics.setColor(Color.BLUE);
+
+                for (int i = 0; i < p2.segments.size(); ++i) {
+                    Segment s = p2.segments.get(i);
+                    graphics.drawLine(s.p1.x, s.p1.y, s.p2.x, s.p2.y);
+                    graphics.drawString("" + i, (s.p1.x + s.p2.x)/2,(s.p1.y + s.p2.y)/2);
+                }
+
+                graphics.fillOval(p2.segments.get(p2.v).p1.x - 5, p2.segments.get(p2.v).p1.y - 5, 10, 10);
+            }
+
+            if (p1 != null && p2 != null && f)
+            {
+                graphics.setColor(Color.MAGENTA);
+                ArrayList<Segment> segments = Variant27.Intersection(p1, p2);
+                System.out.println("Segments " + segments.size());
+
+                for (Segment s : segments)
+                {
+                    graphics.drawLine(s.p1.x, s.p1.y, s.p2.x, s.p2.y);
+                }
+            }
+
+            /*else
+            {
+                Polygon p = new Polygon(points);
+
+                for (int i = 0; i < p.segments.size(); ++i) {
+                    Segment s = p.segments.get(i);
+                    graphics.drawLine(s.p1.x, s.p1.y, s.p2.x, s.p2.y);
+                    graphics.drawString("" + i, (s.p1.x + s.p2.x)/2,(s.p1.y + s.p2.y)/2);
+                }
+            }*/
+
+            /*graphics.setColor(Color.BLUE);
             graphics.drawLine(7, 35, 2000, 35);
             if (flag) {
                 graphics.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{9}, 0));
@@ -53,7 +107,7 @@ public class Canvas extends JFrame implements MouseListener, KeyListener {
                 for (Point point : points) {
                     graphics.drawLine(point.x, point.y, point.x, 35);
                 }
-            }
+            }*/
 
 
             if (this.points.size() >= 4)
@@ -65,7 +119,7 @@ public class Canvas extends JFrame implements MouseListener, KeyListener {
                 if (p != null)
                     graphics.fillOval(p.x - 2, p.y - 2, 4, 4);
             }
-        }
+        //}
     }
     public static void main(String[] args) {
         Canvas demo = new Canvas();
@@ -85,8 +139,20 @@ public class Canvas extends JFrame implements MouseListener, KeyListener {
             int y = e.getY() + 33;
 
             if (y > 37)
-                if (this.points.isEmpty() || this.points.get(this.points.size() - 1).distanceSq(x, y) > 10*10)
+                if (this.points.isEmpty())
+                {
                     this.points.add(new Point(x, y));
+                }
+                else if (this.points.get(this.points.size() - 1).distanceSq(x, y) > 10*10)
+                {
+                    Point p = this.points.get(this.points.size() - 1);
+
+                    if (Math.abs(p.x - x) > Math.abs(p.y - y))
+                        this.points.add(new Point(x, p.y));
+                    else
+                        this.points.add(new Point(p.x, y));
+                }
+
         }
         this.repaint();
     }
@@ -113,23 +179,48 @@ public class Canvas extends JFrame implements MouseListener, KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-        for (Point point : points ) {
+        if (e.getKeyCode() == KeyEvent.VK_ENTER)
+        {
+        /*for (Point point : points ) {
             System.out.print( point.x + " " + point.y + " ");
         }
-            System.out.println();
-        if (points.size() > 0) {
+            System.out.println();*/
+        if (p1 != null && p2 != null)
+        {
             f = true;
+        }
+        else if (points.size() > 1)
+        {
+            points.add(new Point(points.get(0).x, points.get(points.size()-1).y));
+
+            if (p1 == null) {
+                p1 = new Polygon(points);
+                f = false;
+            }
+            else if (p2 == null)
+            {
+                p2 = new Polygon(points);
+                f = false;
+            }
+
+            points.clear();
         }
         }
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
         {
-            f = false;
+            if (f == true)
+                f = false;
+            else if (points.size() > 0)
+                points.clear();
+            else if (p2 != null)
+                p2 = null;
+            else if (p1 != null)
+                p1 = null;
         }
         if (e.getKeyCode() == KeyEvent.VK_R)
         {
-            points.clear();
-            f = false;
+            if (points.size() > 0)
+                points.remove(points.size() - 1);
         }
         this.repaint();
     }
